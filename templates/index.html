@@ -1,0 +1,166 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>UTP Scholarship Eligibility System</title>
+    <link rel="stylesheet" href="{{ url_for('static', filename='css/style.css') }}">
+    <script src="https://cdn.jsdelivr.net/npm/chart.js"></script>
+</head>
+<body>
+    <div class="container">
+        <header>
+            <h1>🎓 UTP Scholarship Eligibility System</h1>
+            <p class="subtitle">AI-Powered Scholarship Recommendation Platform</p>
+        </header>
+
+        <nav class="tabs">
+            <button class="tab-btn active" onclick="showTab('predict')">Predict Eligibility</button>
+            <button class="tab-btn" onclick="showTab('dashboard')">Dashboard</button>
+            <button class="tab-btn" onclick="showTab('models')">Model Performance</button>
+        </nav>
+
+        <!-- Prediction Tab -->
+        <div id="predict-tab" class="tab-content active">
+            <div class="form-container">
+                <h2>Student Information</h2>
+
+                <div class="helper-panel">
+                    <h3>Need help filling the activity fields?</h3>
+                    <ul>
+                        <li><strong>Co-curricular score</strong>: Use the average or points from your activity transcript; rough estimates are okay.</li>
+                        <li><strong>Leadership positions</strong>: Count club/exco roles held during your current programme.</li>
+                        <li><strong>Community service hours</strong>: Total hours spent volunteering in the last 12 months.</li>
+                    </ul>
+                    <p class="helper-note">These numbers show how active and well-rounded you are. They help the AI mirror real scholarship rubrics.</p>
+                </div>
+
+                <form id="prediction-form">
+                    <div class="form-group">
+                        <label for="year_of_study">Year of Study</label>
+                        <select id="year_of_study" name="year_of_study" required>
+                            <option value="1">Year 1</option>
+                            <option value="2">Year 2</option>
+                            <option value="3">Year 3</option>
+                            <option value="4">Year 4</option>
+                        </select>
+                    </div>
+
+                    <div class="form-group">
+                        <label for="cgpa">CGPA (2.0 - 4.0)</label>
+                        <input type="number" id="cgpa" name="cgpa" min="2.0" max="4.0" step="0.01" value="3.2" required>
+                        <small>Current Grade Point Average</small>
+                    </div>
+
+                    <div class="form-group">
+                        <label for="family_income">Family Income (RM/year)</label>
+                        <input type="number" id="family_income" name="family_income" min="0" max="200000" step="1000" value="50000" required>
+                        <small>Annual household income</small>
+                    </div>
+
+                    <div class="form-group">
+                        <div class="form-label-row">
+                            <label for="cocurricular_score">Co-curricular Score (0-100)</label>
+                            <span class="info-icon" tabindex="0" data-tooltip="Use the score from your co-curricular transcript or estimate based on participation points.">?</span>
+                        </div>
+                        <input type="number" id="cocurricular_score" name="cocurricular_score" min="0" max="100" value="50" placeholder="e.g., 72" required>
+                        <small>Average activity/club score; estimates are fine if you note them.</small>
+                    </div>
+
+                    <div class="form-group">
+                        <div class="form-label-row">
+                            <label for="leadership_positions">Leadership Positions</label>
+                            <span class="info-icon" tabindex="0" data-tooltip="Count each role where you planned, led, or supervised others (club EXCO, project lead, team captain, etc.).">?</span>
+                        </div>
+                        <input type="number" id="leadership_positions" name="leadership_positions" min="0" max="10" value="0" placeholder="e.g., 2" required>
+                        <small>Include current and past roles held during your degree.</small>
+                    </div>
+
+                    <div class="form-group">
+                        <div class="form-label-row">
+                            <label for="community_service_hours">Community Service Hours</label>
+                            <span class="info-icon" tabindex="0" data-tooltip="Sum of volunteer hours in the past 12 months (charity drives, tutoring, clean-ups, etc.). Rough totals work.">?</span>
+                        </div>
+                        <input type="number" id="community_service_hours" name="community_service_hours" min="0" max="500" value="0" placeholder="e.g., 40" required>
+                        <small>Approximate total volunteer hours over the last year.</small>
+                    </div>
+
+                    <button type="submit" class="btn-primary">Check Eligibility</button>
+                </form>
+
+                <section class="faq-section">
+                    <h3>Quick FAQ</h3>
+                    <details>
+                        <summary>What if I don't remember my exact co-curricular score?</summary>
+                        <p>Provide your best estimate based on activity points or advisor feedback. The model can still run, but more accurate numbers make predictions stronger.</p>
+                    </details>
+                    <details>
+                        <summary>How should I count leadership positions?</summary>
+                        <p>Include any role where you coordinated people or events (club president, treasurer, project lead, captain). Separate roles count individually.</p>
+                    </details>
+                    <details>
+                        <summary>Do informal volunteering hours count?</summary>
+                        <p>Yes. Add both formal programmes and informal service (e.g., tutoring neighbours) if you can describe them when asked by a scholarship panel.</p>
+                    </details>
+                </section>
+
+                <div id="prediction-result" class="result-container" style="display: none;">
+                    <h3>Prediction Result</h3>
+                    <div id="result-content"></div>
+                </div>
+            </div>
+        </div>
+
+        <!-- Dashboard Tab -->
+        <div id="dashboard-tab" class="tab-content">
+            <h2>Dataset Statistics & Visualizations</h2>
+            <div class="dashboard-grid">
+                <div class="stat-card">
+                    <h3>Total Students</h3>
+                    <p id="total-students" class="stat-value">-</p>
+                </div>
+                <div class="stat-card">
+                    <h3>Eligible</h3>
+                    <p id="eligible-count" class="stat-value">-</p>
+                </div>
+                <div class="stat-card">
+                    <h3>Not Eligible</h3>
+                    <p id="not-eligible-count" class="stat-value">-</p>
+                </div>
+                <div class="stat-card">
+                    <h3>Eligibility Rate</h3>
+                    <p id="eligibility-rate" class="stat-value">-</p>
+                </div>
+            </div>
+
+            <div class="chart-container">
+                <canvas id="eligibilityChart"></canvas>
+            </div>
+
+            <div class="chart-container">
+                <canvas id="cgpaChart"></canvas>
+            </div>
+
+            <div class="chart-container">
+                <canvas id="incomeChart"></canvas>
+            </div>
+        </div>
+
+        <!-- Model Performance Tab -->
+        <div id="models-tab" class="tab-content">
+            <h2>Model Performance Comparison</h2>
+            <div id="model-comparison" class="model-comparison"></div>
+            <div class="chart-container">
+                <canvas id="modelMetricsChart"></canvas>
+            </div>
+        </div>
+    </div>
+
+    <footer>
+        <p>UTP AI-Powered Scholarship Eligibility System | Group Project</p>
+    </footer>
+
+    <script src="{{ url_for('static', filename='js/app.js') }}"></script>
+</body>
+</html>
+
