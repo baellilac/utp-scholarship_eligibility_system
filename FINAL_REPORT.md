@@ -36,6 +36,8 @@ This project presents an AI-powered scholarship eligibility system designed spec
 **Key Achievements:**
 - Developed three ML models with Random Forest achieving 93.25% accuracy
 - Created a user-friendly web application with real-time predictions
+- Implemented specific scholarship provider recommendations (PETRONAS, MARA, Zakat, Yayasan UTP)
+- Added model explanations to help users understand AI predictions
 - Implemented comprehensive data visualization dashboard
 - Ensured ethical data handling with anonymized synthetic dataset
 
@@ -408,6 +410,22 @@ The system consists of three main components:
 - Real-time eligibility prediction
 - Probability scores for transparency
 - Predictions from all three models for comparison
+- **Specific Scholarship Recommendations**: 
+  - Personalized eligibility status for four major scholarship providers:
+    - **PETRONAS Scholarship**: Requires CGPA ≥ 3.5, Co-curricular ≥ 70, Leadership ≥ 2 positions, Community Service ≥ 50 hours. Focuses on high academic excellence with strong leadership and community involvement.
+    - **MARA Scholarship**: Requires Family Income ≤ RM 80,000, CGPA ≥ 3.0, Co-curricular ≥ 50. Government scholarship for Bumiputera students with financial need and good academic performance.
+    - **Zakat Scholarship**: Requires Family Income ≤ RM 50,000, CGPA ≥ 2.8, Community Service ≥ 30 hours. Need-based scholarship for lower-income families with community service involvement.
+    - **Yayasan UTP Scholarship**: Requires CGPA ≥ 3.2, (Income ≤ RM 100,000 OR Co-curricular ≥ 60). Institutional scholarship for UTP students with good academic standing and active participation.
+  - For each scholarship, the system shows:
+    - Eligibility status (Eligible/Not Eligible)
+    - Detailed reasons why the student qualifies or what needs improvement
+    - Description of the scholarship focus and purpose
+  - Summary showing total number of eligible scholarships (e.g., "Eligible for 2 out of 4 scholarships")
+- **Model Explanations**: 
+  - **Logistic Regression**: Statistical model that analyzes relationships using linear patterns. Provides baseline prediction and is easy to interpret. Good for understanding general eligibility trends.
+  - **Decision Tree**: Rule-based model that makes decisions by following a tree of questions. Shows clear decision rules and is highly interpretable. Helps users understand exactly which criteria they meet or don't meet.
+  - **Random Forest**: Advanced ensemble model that combines multiple decision trees. Most accurate and reliable prediction, considers complex patterns. Used as the primary model for final eligibility determination.
+  - Each model's prediction is displayed with its confidence percentage and explanation of how it works
 
 #### 10.2.2 Dashboard
 - Dataset statistics overview
@@ -531,10 +549,10 @@ For production deployment:
 
 1. **Synthetic Data**: Dataset is generated, not from real UTP records
 2. **Limited Features**: Only 6 features considered; more could improve accuracy
-3. **Binary Classification**: Does not recommend specific scholarship types
-4. **Static Model**: Models not retrained with new data automatically
-5. **No Historical Data**: Cannot learn from actual UTP scholarship awards
-6. **Single Institution**: Designed for UTP; may need adaptation for other institutions
+3. **Static Model**: Models not retrained with new data automatically
+4. **No Historical Data**: Cannot learn from actual UTP scholarship awards
+5. **Single Institution**: Designed for UTP; may need adaptation for other institutions
+6. **Rule-Based Scholarship Matching**: Specific scholarship recommendations use rule-based criteria rather than ML-based classification
 
 ### 13.2 Future Enhancements
 
@@ -549,10 +567,11 @@ For production deployment:
    - Awards and honors
    - Financial need indicators
 
-3. **Multi-class Classification**:
-   - Predict specific scholarship types
-   - Rank scholarships by suitability
-   - Provide personalized recommendations
+3. **Enhanced Scholarship Recommendations**:
+   - ML-based classification for specific scholarship types (currently rule-based)
+   - Rank scholarships by suitability and match score
+   - Expand to more scholarship providers
+   - Dynamic criteria updates based on provider requirements
 
 4. **Advanced Models**:
    - Neural networks for complex patterns
