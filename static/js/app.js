@@ -88,7 +88,7 @@ function displayPredictionResult(data) {
         <div class="probability-bar">
             <div class="probability-item">
                 <div class="probability-label">
-                    <span>Eligibility Probability</span>
+                    <span>Overall Eligibility Probability</span>
                     <span>${probability.toFixed(1)}%</span>
                 </div>
                 <div class="probability-bar-container">
@@ -98,22 +98,114 @@ function displayPredictionResult(data) {
                 </div>
             </div>
         </div>
-        
-        <div style="margin-top: 25px; padding-top: 20px; border-top: 2px solid rgba(255,255,255,0.3);">
-            <h4 style="margin-bottom: 15px;">Model Predictions:</h4>
-            <div style="display: grid; gap: 10px;">
     `;
     
-    if (data.all_predictions && data.all_probabilities) {
+    // Display specific scholarship recommendations
+    if (data.scholarship_recommendations && data.scholarship_recommendations.length > 0) {
+        html += `
+            <div style="margin-top: 30px; padding-top: 20px; border-top: 2px solid rgba(255,255,255,0.3);">
+                <h3 style="margin-bottom: 20px; font-size: 1.3rem;">🎓 Specific Scholarship Recommendations</h3>
+                <p style="margin-bottom: 15px; opacity: 0.9;">
+                    Based on your profile, here are your eligibility status for specific scholarship providers:
+                </p>
+                <div style="display: grid; gap: 15px;">
+        `;
+        
+        data.scholarship_recommendations.forEach(scholarship => {
+            const eligible = scholarship.eligible;
+            const bgColor = eligible ? 'rgba(16, 185, 129, 0.2)' : 'rgba(239, 68, 68, 0.2)';
+            const borderColor = eligible ? 'rgba(16, 185, 129, 0.5)' : 'rgba(239, 68, 68, 0.5)';
+            
+            html += `
+                <div style="background: ${bgColor}; border: 2px solid ${borderColor}; padding: 15px; border-radius: 10px;">
+                    <div style="display: flex; justify-content: space-between; align-items: center; margin-bottom: 10px;">
+                        <h4 style="margin: 0; font-size: 1.1rem;">
+                            ${eligible ? '✅' : '❌'} ${scholarship.name}
+                        </h4>
+                        <span style="background: ${eligible ? 'rgba(16, 185, 129, 0.3)' : 'rgba(239, 68, 68, 0.3)'}; 
+                                     padding: 4px 12px; border-radius: 12px; font-size: 0.85rem; font-weight: bold;">
+                            ${eligible ? 'ELIGIBLE' : 'NOT ELIGIBLE'}
+                        </span>
+                    </div>
+                    <p style="margin: 8px 0; font-size: 0.9rem; opacity: 0.9;">
+                        ${scholarship.description}
+                    </p>
+                    <div style="margin-top: 10px;">
+                        <strong style="font-size: 0.9rem;">${eligible ? 'Why you qualify:' : 'What you need to improve:'}</strong>
+                        <ul style="margin: 8px 0; padding-left: 20px; font-size: 0.85rem;">
+            `;
+            
+            scholarship.reasons.forEach(reason => {
+                html += `<li style="margin: 4px 0;">${reason}</li>`;
+            });
+            
+            html += `
+                        </ul>
+                    </div>
+                </div>
+            `;
+        });
+        
+        html += `
+                </div>
+                <div style="margin-top: 15px; padding: 12px; background: rgba(59, 130, 246, 0.2); border-radius: 8px; border-left: 4px solid #3b82f6;">
+                    <strong>📊 Summary:</strong> You are eligible for <strong>${data.eligible_scholarships_count} out of ${data.scholarship_recommendations.length}</strong> scholarship providers.
+                    ${data.eligible_scholarships_count > 0 ? 
+                        `<br>Recommended scholarships: <strong>${data.eligible_scholarships.join(', ')}</strong>` : 
+                        '<br>Consider improving your profile to meet scholarship criteria.'}
+                </div>
+            </div>
+        `;
+    }
+    
+    // Display model predictions with explanations
+    html += `
+        <div style="margin-top: 30px; padding-top: 20px; border-top: 2px solid rgba(255,255,255,0.3);">
+            <h3 style="margin-bottom: 15px; font-size: 1.3rem;">🤖 AI Model Predictions Explained</h3>
+            <p style="margin-bottom: 15px; opacity: 0.9; font-size: 0.95rem;">
+                Our system uses 3 different AI models to analyze your profile. Each model has its own approach:
+            </p>
+            <div style="display: grid; gap: 12px;">
+    `;
+    
+    if (data.all_predictions && data.all_probabilities && data.model_explanations) {
         for (const [modelName, prediction] of Object.entries(data.all_predictions)) {
             const prob = data.all_probabilities[modelName];
-            if (prob) {
+            const explanation = data.model_explanations[modelName];
+            const isPrimary = modelName === data.model_used;
+            
+            if (prob && explanation) {
                 const modelEligible = prediction === 1;
+                const modelProb = ((prob.eligible || 0) * 100).toFixed(1);
+                
                 html += `
-                    <div style="background: rgba(255,255,255,0.2); padding: 12px; border-radius: 8px;">
-                        <div style="display: flex; justify-content: space-between; align-items: center;">
-                            <span><strong>${modelName}:</strong> ${modelEligible ? '✅ Eligible' : '❌ Not Eligible'}</span>
-                            <span>${((prob.eligible || 0) * 100).toFixed(1)}%</span>
+                    <div style="background: rgba(255,255,255,${isPrimary ? '0.25' : '0.15'}); 
+                                padding: 15px; border-radius: 8px; 
+                                border-left: 4px solid ${isPrimary ? '#10b981' : 'rgba(255,255,255,0.5)'};">
+                        <div style="display: flex; justify-content: space-between; align-items: center; margin-bottom: 10px;">
+                            <div>
+                                <strong style="font-size: 1rem;">${modelName}</strong>
+                                ${isPrimary ? '<span style="background: rgba(16, 185, 129, 0.3); padding: 2px 8px; border-radius: 8px; font-size: 0.75rem; margin-left: 8px;">PRIMARY MODEL</span>' : ''}
+                            </div>
+                            <div style="text-align: right;">
+                                <div style="font-size: 1.1rem; font-weight: bold;">
+                                    ${modelEligible ? '✅ Eligible' : '❌ Not Eligible'}
+                                </div>
+                                <div style="font-size: 0.85rem; opacity: 0.8;">
+                                    ${modelProb}% confidence
+                                </div>
+                            </div>
+                        </div>
+                        <div style="margin-top: 10px; padding-top: 10px; border-top: 1px solid rgba(255,255,255,0.2);">
+                            <p style="font-size: 0.9rem; margin: 5px 0; opacity: 0.9;">
+                                <strong>How it works:</strong> ${explanation.description}
+                            </p>
+                            <p style="font-size: 0.85rem; margin: 5px 0; opacity: 0.8;">
+                                <strong>Strength:</strong> ${explanation.strength}
+                            </p>
+                            <p style="font-size: 0.85rem; margin: 5px 0; opacity: 0.8;">
+                                <strong>Use case:</strong> ${explanation.use_case}
+                            </p>
                         </div>
                     </div>
                 `;
@@ -123,9 +215,17 @@ function displayPredictionResult(data) {
     
     html += `
             </div>
-            <p style="margin-top: 15px; font-size: 0.9rem; opacity: 0.8;">
-                Primary Model: <strong>${data.model_used}</strong>
-            </p>
+            <div style="margin-top: 15px; padding: 12px; background: rgba(139, 92, 246, 0.2); border-radius: 8px; border-left: 4px solid #8b5cf6;">
+                <strong>💡 Understanding the Results:</strong> 
+                <ul style="margin: 8px 0; padding-left: 20px; font-size: 0.9rem;">
+                    <li><strong>Logistic Regression</strong> gives you a baseline prediction using statistical patterns</li>
+                    <li><strong>Decision Tree</strong> shows you the specific rules and criteria used in the decision</li>
+                    <li><strong>Random Forest</strong> (primary model) combines multiple decision trees for the most accurate prediction</li>
+                </ul>
+                <p style="margin-top: 8px; font-size: 0.85rem; opacity: 0.9;">
+                    The final recommendation is based on the <strong>${data.model_used}</strong> model, which is our most reliable predictor.
+                </p>
+            </div>
         </div>
     `;
     
