@@ -171,11 +171,4 @@ Models are evaluated using:
 - Export prediction results
 - Email notifications for scholarship opportunities
 
-## License
-
-This project is developed for educational purposes as part of the UTP AI Group Project.
-
-## Authors
-
-UTP AI Group Project Team
 
